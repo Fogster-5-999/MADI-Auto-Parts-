@@ -6,9 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>МАДИ Автозапчасти</title>
 <style>
-  /* ========== THEME VARIABLES ========== */
   :root {
-    /* Светлая тема (по умолчанию) — красивая светло-голубая */
     --accent: #2f80ed;
     --accent-2: #1976d2;
     --muted: #6b7785;
@@ -26,7 +24,6 @@
     --glass-blur: 14px;
   }
 
-  /* Тёмная тема — тёмно-синяя */
   .dark-mode {
     --accent: #5aa8ff;
     --accent-2: #2f80ed;
@@ -133,7 +130,6 @@
 
   footer{padding:12px 0 0;color:var(--text-muted);font-size:13px}
 
-  /* ========== АДАПТИВНЫЙ ЧАТ И КОРЗИНА ========== */
   #aiChatWidget{position:fixed;bottom:20px;right:20px;z-index:9999;}
   #chatMinimized{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;padding:14px 20px;border-radius:50px;cursor:pointer;box-shadow:0 14px 40px rgba(47,128,237,0.26);font-weight:800;font-size:15px;display:flex;align-items:center;gap:10px;transition:all .3s;}
   #chatMinimized:hover{transform:scale(1.06)}
@@ -171,7 +167,6 @@
   .muted{color:var(--text-muted)}
   @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
   .appear{animation:fadeIn .4s ease both}
-  /* ──────── ИСПРАВЛЕНИЕ ВЫПАДАЮЩИХ СПИСКОВ ──────── */
 select {
   color: var(--text-main) !important;
   background-color: rgba(255,255,255,0.09) !important;
@@ -183,52 +178,44 @@ select {
   appearance: none;
 }
 
-/* Тёмная тема — светлый текст и тёмный фон у option */
 .dark-mode select,
 .dark-mode select option {
   color: #e0eafc !important;
   background-color: #0a1428 !important;
 }
 
-/* Светлая тема — тёмный текст и белый фон у option */
 select option {
   color: #0f2330 !important;
   background-color: #ffffff !important;
 }
 
-/* При наведении на вариант — лёгкая подсветка */
 select option:hover,
 .dark-mode select option:hover {
   background-color: var(--accent) !important;
   color: white !important;
 }
 
-/* Стрелка в светлой теме */
 :not(.dark-mode) select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%232f80ed' d='M0 0l6 8 6-8z'/%3E%3C/svg%3E");
 }
-/* ──────── ПЛАВНАЯ АНИМАЦИЯ ВЫСОТЫ SELECT ──────── */
 select {
-  overflow: hidden;                     /* Важно! Скрываем лишнее */
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);  /* Плавная высота + другие свойства */
-  max-height: 56px;                     /* Высота закрытого состояния */
+  overflow: hidden;                    
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);  
+  max-height: 56px;                     
   padding-top: 14px;
   padding-bottom: 14px;
 }
 
-/* Когда в select больше 1 опции — плавно увеличиваем высоту */
 select:has(option:nth-child(2)) {
-  max-height: 400px;                    /* Достаточно для длинных списков */
+  max-height: 400px;                   
 }
 
-/* Опции появляются с лёгкой задержкой (stagger) */
 select option {
   opacity: 0;
   transform: translateY(-8px);
   animation: fadeInDown 0.4s ease forwards;
 }
 
-/* Задержка для каждой опции */
 select option:nth-child(1) { animation-delay: 0.00s; }
 select option:nth-child(2) { animation-delay: 0.03s; }
 select option:nth-child(3) { animation-delay: 0.06s; }
@@ -239,19 +226,16 @@ select option:nth-child(7) { animation-delay: 0.18s; }
 select option:nth-child(8) { animation-delay: 0.21s; }
 select option:nth-child(9) { animation-delay: 0.24s; }
 select option:nth-child(10) { animation-delay: 0.27s; }
-/* Для остальных — общая задержка */
 select option:nth-child(n+11) { animation-delay: 0.30s; }
 
 @keyframes fadeInDown {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Дополнительно: лёгкая тень при фокусе */
 select:focus {
-  box-shadow: 0 0 0 4px rgba(227, 25, 55, 0.25);   /* Красный Tesla-акцент */
+  box-shadow: 0 0 0 4px rgba(227, 25, 55, 0.25);   
 }
 
-/* Плавное появление кнопки ИИ-Экспперта */
 #chatMinimized {
   background: linear-gradient(90deg,var(--accent),var(--accent-2));
   color: white;
@@ -265,8 +249,6 @@ select:focus {
   align-items: center;
   gap: 10px;
   transition: all .3s;
-
-  /* ← ЭТИ ДВЕ СТРОКИ — ДЛЯ ПЛАВНОГО ПОЯВЛЕНИЯ ПРИ ЗАГРУЗКЕ */
   animation: slideUp 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) 0.4s forwards;
   transform: translateY(120%);
   opacity: 0;
@@ -274,7 +256,7 @@ select:focus {
 
 #chatMinimized:hover { transform: scale(1.06) translateY(0); }
 
-/* Анимация выезда снизу */
+
 @keyframes slideUp {
   to {
     transform: translateY(0);
@@ -282,7 +264,6 @@ select:focus {
   }
 }
 
-/* При открытом чате — кнопка скрыта сразу без анимации */
 #chatFull.open ~ #chatMinimized,
 #chatMinimized[style*="none"] {
   animation: none !important;
@@ -331,7 +312,6 @@ select:focus {
   </div>
 </div>
 
-<!-- Чат с ИИ (исправленный) -->
 <div id="aiChatWidget">
   <div id="chatMinimized" onclick="openChat()">ИИ-Эксперт</div>
   <div id="chatFull">
@@ -350,7 +330,6 @@ select:focus {
   </div>
 </div>
 
-<!-- Корзина (исправленная) -->
 <div id="cartButton" onclick="openCart()">🛒</div>
 <div id="cartPanel">
   <div class="cart-header">
@@ -369,7 +348,6 @@ const CHAT_API = '/chat';
 const API_BASE = 'https://api.umapi.ru';
 const APP_KEY = '60314408-cb26-4b0b-8f26-4f48cc9a2130';
 
-// Добавляем функцию для получения APP_KEY с бэкенда
 async function initApp() {
     try {
         await loadManufacturers();
@@ -383,7 +361,6 @@ const state = { language: 'ru', region: 'WWW', manufacturerId: null, modelId: nu
 const sessionId = "madi_user_" + Date.now() + "_" + Math.random().toString(36).substr(2,6);
 let cart = [];
 
-/* ТЕМА */
 (function(){
   const stored = localStorage.getItem('madi_theme');
   let isDark = stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -404,7 +381,6 @@ let cart = [];
   };
 })();
 
-/* ЧАТ — ИСПРАВЛЕННЫЙ */
 function openChat() {
   document.getElementById('chatFull').classList.add('open');
   document.getElementById('chatMinimized').style.display = 'none';
@@ -456,7 +432,6 @@ async function sendMessage() {
   }
 }
 
-/* Закрытие чата кликом вне */
 document.addEventListener('click', (e) => {
   const widget = document.getElementById('aiChatWidget');
   if (!widget.contains(e.target) && document.getElementById('chatFull').classList.contains('open')) {
@@ -464,7 +439,6 @@ document.addEventListener('click', (e) => {
   }
 });
 
-/* УТИЛИТЫ */
 function showError(msg){ document.getElementById('errorBox').innerHTML = `<div class="error">${escapeHtml(msg)}</div>`; }
 function clearError(){ document.getElementById('errorBox').innerHTML = ''; }
 function setStats(txt){ document.getElementById('stats').textContent = txt; }
@@ -491,9 +465,7 @@ function showToast(msg){
   setTimeout(()=>{ t.classList.remove("show"); setTimeout(()=>t.remove(), 500); }, 2400);
 }
 
-/* КОРЗИНА — ИСПРАВЛЕННАЯ */
 
-/* КОРЗИНА — С ИСЧЕЗАЮЩЕЙ КНОПКОЙ */
 function openCart() {
   document.getElementById("cartPanel").classList.add("open");
   document.getElementById("cartButton").classList.add("hidden");
@@ -505,7 +477,6 @@ function closeCart() {
   document.getElementById("cartButton").classList.remove("hidden");
 }
 
-/* Закрытие кликом вне панели (на мобильных) */
 document.addEventListener("click", function(e) {
   const panel = document.getElementById("cartPanel");
   const button = document.getElementById("cartButton");
@@ -533,7 +504,6 @@ function removeFromCart(index){ cart.splice(index,1); renderCart(); }
 
 function addToCart(article, priceText){ addToCartInternal(article, priceText); showToast("Добавлено: " + article); }
 
-/* КАТАЛОГ */
 function pathPrefix(){ return `${document.getElementById('languageCode').value}-${document.getElementById('regionCode').value}`; }
 
 async function loadManufacturers(force=false){
@@ -731,7 +701,6 @@ function displayArticles(list){
   }).join('');
 }
 
-/* ОБРАБОТЧИКИ */
 document.getElementById('languageCode').addEventListener('change', ()=>{ resetAll(); loadManufacturers(true); });
 document.getElementById('regionCode').addEventListener('change', ()=>{ resetAll(); loadManufacturers(true); });
 document.getElementById('manufacturerSelect').addEventListener('change', e=>{ const v=e.target.value; state.manufacturerId=v; resetBelow('manufacturer'); if(v) loadModels(v); });
@@ -757,8 +726,6 @@ async function initializeApplication() {
     setStats('Загружаю производителей...');
     await loadManufacturers();
 }
-
-// Запускаем приложение после загрузки страницы
 document.addEventListener('DOMContentLoaded', function() {
     initializeApplication();
 });
