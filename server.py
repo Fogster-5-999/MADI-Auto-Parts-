@@ -7,12 +7,20 @@ import uvicorn
 import uuid
 import os
 import re
+import time
+import logging
+
+logger = logging.getLogger("madi")
 
 app = FastAPI()
 
+CORS_ORIGINS = [
+    o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()
+] or ["http://localhost:8000", "https://madi-parts.onrender.com"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -23,18 +31,22 @@ FOLDER_ID = os.getenv("FOLDER_ID")
 API_KEY = os.getenv("API_KEY") 
 MODEL = os.getenv("MODEL", "qwen3-235b-a22b-fp8/latest")
 
-# Проверка обязательных переменных
-if not FOLDER_ID or not API_KEY:
-    raise ValueError("FOLDER_ID and API_KEY must be set in environment variables")
+AI_ENABLED = bool(FOLDER_ID and API_KEY)
 
-client = openai.OpenAI(
-    api_key=API_KEY,
-    base_url="https://rest-assistant.api.cloud.yandex.net/v1",
-    project=FOLDER_ID
-)
+client = None
+if AI_ENABLED:
+    client = openai.OpenAI(
+        api_key=API_KEY,
+        base_url="https://rest-assistant.api.cloud.yandex.net/v1",
+        project=FOLDER_ID,
+    )
 
-# Хранилище контекста (сессии)
+# === ХРАНИЛИЩЕ СЕССИЙ (in-memory, с лимитами) ===
 sessions = {}
+MAX_SESSIONS = 1000
+MAX_HISTORY = 50
+MODEL_CONTEXT_LIMIT = 20
+SESSION_TTL = 24 * 60 * 60
 
 SYSTEM_PROMPT = """
 тебе будут поступать запросы по автозапчастям и в целом проблемам с автомобилями, твоя задача давать реальные заменители запчастей и в целом на любые вопросы отвечать как лучший эксперт в автомобильной сфере(используй все свои знания).  
@@ -42,6 +54,37 @@ SYSTEM_PROMPT = """
 ВАЖНО: НЕ ДАВАЙ КЛИКАБЕЛЬНЫЕ ССЫЛКИ В СВОЕМ ОТВЕТЕ, ДАВАЙ ТОЛЬКО ТЕКСТ, НЕ ВЫДУМЫВАЙ САМИ ИНТЕРНЕТ ССЫЛКИ. также постарайся если это возможно дать совет как решить проблему своими руками
 ВАЖНО: Используй обычный текст без Markdown форматирования. Не используй **жирный**, *курсив*, ### заголовки, > цитаты, маркированные списки с -, *, •.
 """
+
+def _now():
+    return time.time()
+
+def _prune_sessions():
+    expired = [sid for sid, s in sessions.items() if _now() - s["last_used"] > SESSION_TTL]
+    for sid in expired:
+        del sessions[sid]
+    while len(sessions) > MAX_SESSIONS:
+        oldest = min(sessions, key=lambda sid: sessions[sid]["last_used"])
+        del sessions[oldest]
+
+def _get_session(session_id):
+    s = sessions.get(session_id)
+    if s is None:
+        _prune_sessions()
+        if len(sessions) >= MAX_SESSIONS:
+            oldest = min(sessions, key=lambda sid: sessions[sid]["last_used"])
+            del sessions[oldest]
+        s = {"messages": [{"role": "system", "content": SYSTEM_PROMPT}], "last_used": _now()}
+        sessions[session_id] = s
+    s["last_used"] = _now()
+    return s
+
+def _add_message(session, role, content):
+    session["messages"].append({"role": role, "content": content})
+    if len(session["messages"]) > MAX_HISTORY:
+        session["messages"] = [session["messages"][0]] + session["messages"][-(MAX_HISTORY - 1):]
+
+def _model_context(session):
+    return session["messages"][1:][-MODEL_CONTEXT_LIMIT:]
 
 def clean_ai_response(text):
     """
@@ -91,54 +134,45 @@ async def serve_frontend():
 # Health check
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "model": MODEL}
+    return {"status": "healthy", "model": MODEL, "ai_enabled": AI_ENABLED}
 
 # Chat endpoint
 @app.post("/chat")
 async def chat(request: Request):
+    if not AI_ENABLED:
+        return JSONResponse(status_code=503, content={"error": "AI is not configured on the server"})
+
     try:
         data = await request.json()
         message = data.get("message", "").strip()
-        session_id = data.get("session_id", str(uuid.uuid4()))
+        session_id = data.get("session_id") or str(uuid.uuid4())
 
         if not message:
             return JSONResponse(status_code=400, content={"error": "empty message"})
 
-        # Инициализация сессии
-        if session_id not in sessions:
-            sessions[session_id] = [{"role": "system", "content": SYSTEM_PROMPT}]
+        if len(message) > 4000:
+            return JSONResponse(status_code=400, content={"error": "message too long"})
 
-        # Добавляем сообщение пользователя
-        sessions[session_id].append({"role": "user", "content": message})
+        session = _get_session(session_id)
+        _add_message(session, "user", message)
 
-        # ПРАВИЛЬНЫЙ ВЫЗОВ ДЛЯ YANDEX CLOUD - ВОЗВРАЩАЕМ ОРИГИНАЛЬНЫЙ ФОРМАТ
         response = client.responses.create(
             model=f"gpt://{FOLDER_ID}/{MODEL}",
             temperature=0.6,
             max_output_tokens=2500,
             instructions=SYSTEM_PROMPT,
-            input=[{"role": "user", "content": message}]
+            input=_model_context(session)
         )
 
         reply = response.output_text.strip()
-        
-        # ОЧИСТКА ОТВЕТА ОТ ФОРМАТИРОВАНИЯ (но сохраняем эмодзи)
         cleaned_reply = clean_ai_response(reply)
-
-        # Сохраняем ответ в историю
-        sessions[session_id].append({"role": "assistant", "content": cleaned_reply})
+        _add_message(session, "assistant", cleaned_reply)
 
         return {"reply": cleaned_reply, "session_id": session_id}
 
-    except Exception as e:
-        import traceback
-        error_detail = traceback.format_exc()
-        print("ОШИБКА В ЧАТЕ:")
-        print(error_detail)
-        return JSONResponse(
-            status_code=500,
-            content={"error": str(e), "detail": "Проверьте API ключ и настройки Yandex Cloud"}
-        )
+    except Exception:
+        logger.exception("Chat error")
+        return JSONResponse(status_code=500, content={"error": "internal server error"})
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))
