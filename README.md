@@ -24,10 +24,16 @@
 ## Структура проекта
 
  - madi-autoparts/
- - server.py              # FastAPI-бэкенд
+ - app/                   # Бэкенд (FastAPI-приложение)
+   - main.py              # Точка входа: FastAPI app, CORS, подключение роутеров
+   - config.py            # Переменные окружения и настройки
+   - sessions.py          # Хранилище диалогов (in-memory, с лимитами)
+   - text.py              # Очистка ответов AI от Markdown
+   - services/            # Внешние интеграции (Yandex Cloud AI)
+   - routers/             # Эндпоинты: /health, /chat
+   - static/              # Фронтенд (HTML + CSS + JS)
  - requirements.txt       # Зависимости Python
- - MADIPARTS.html         # Фронтенд (HTML + CSS + JS) + интеграция UMAPI
- - .gitignore             # Исключения Git
+ - render.yaml            # Конфигурация деплоя на Render
 
 
 ## Технологический стек
@@ -73,6 +79,8 @@ export MODEL="qwen3-235b-a22b-fp8/latest"   # опционально
 export PORT=8000                            # опционально
 
 # 4. Запустить приложение
-python server.py
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+# или
+python -m app.main
 После запуска приложение доступно по адресу:
 http://localhost:8000 (или выбранный вами при деплое адрес)
