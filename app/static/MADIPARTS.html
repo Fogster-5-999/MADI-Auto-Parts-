@@ -345,8 +345,7 @@ select:focus {
 
 <script>
 const CHAT_API = '/chat';
-const API_BASE = 'https://api.umapi.ru';
-const APP_KEY = '60314408-cb26-4b0b-8f26-4f48cc9a2130';
+const API_BASE = '/api/parts';
 
 async function initApp() {
     try {
@@ -446,8 +445,7 @@ function showLoading(msg='Загрузка...'){ document.getElementById('loadin
 function hideLoading(){ document.getElementById('loading').style.display='none'; document.getElementById('parts').style.display='grid'; }
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 async function checkedFetch(url){
-  const headers = { 'X-App-Key': APP_KEY };
-  const res = await fetch(url, { headers });
+  const res = await fetch(url);
   if (!res.ok) { const text = await res.text().catch(()=>`HTTP ${res.status}`); throw new Error(`Ошибка ${res.status}: ${text}`); }
   return res.json();
 }
@@ -504,7 +502,7 @@ function removeFromCart(index){ cart.splice(index,1); renderCart(); }
 
 function addToCart(article, priceText){ addToCartInternal(article, priceText); showToast("Добавлено: " + article); }
 
-function pathPrefix(){ return `${document.getElementById('languageCode').value}-${document.getElementById('regionCode').value}`; }
+function pathPrefix(){ return `${document.getElementById('languageCode').value}/${document.getElementById('regionCode').value}`; }
 
 async function loadManufacturers(force=false){
   const sel = document.getElementById('manufacturerSelect');
@@ -513,7 +511,7 @@ async function loadManufacturers(force=false){
   showLoading();
   try{
     if (!force && cache.manufacturers){ populateManufacturers(cache.manufacturers); hideLoading(); return; }
-    const url = new URL(`${API_BASE}/v2/autocatalog/${pathPrefix()}/Manufacturers`);
+    const url = new URL(`${API_BASE}/${pathPrefix()}/Manufacturers`, window.location.origin);
     url.searchParams.append('type', 'PC');
     url.searchParams.append('popular', 'false');
     url.searchParams.append('fields', 'MFA_ID,MANUFACTURER,MANUFACTURER_RU,POPULAR_PC');
@@ -537,7 +535,7 @@ async function loadModels(mfaId, force=false){
   showLoading();
   try{
     if (!force && cache.models[mfaId]){ populateModels(mfaId); hideLoading(); return; }
-    const url = new URL(`${API_BASE}/v2/autocatalog/${pathPrefix()}/ModelSeries`);
+    const url = new URL(`${API_BASE}/${pathPrefix()}/ModelSeries`, window.location.origin);
     url.searchParams.append('MFA_ID', mfaId); url.searchParams.append('type', 'PC');
     url.searchParams.append('fields', 'MS_ID,MODEL_SERIES,CI_FROM,CI_TO');
     const data = await checkedFetch(url);
@@ -566,7 +564,7 @@ async function loadModifications(msId, force=false){
   try{
     const cacheKey = `PC_${msId}`;
     if (!force && cache.modifications[cacheKey]){ populateModifications(cacheKey); hideLoading(); return; }
-    const url = new URL(`${API_BASE}/v2/autocatalog/${pathPrefix()}/Passangers`);
+    const url = new URL(`${API_BASE}/${pathPrefix()}/Passangers`, window.location.origin);
     url.searchParams.append('MS_ID', msId); url.searchParams.append('type', 'PC'); url.searchParams.append('Engines', 'false');
     url.searchParams.append('fields', 'PC_ID,PASSENGER_CAR,MODIFICATION,ENGINE_TYPE,POWER_PS,CI_FROM,CI_TO,BODY_TYPE,FUEL_TYPE');
     const data = await checkedFetch(url);
@@ -592,7 +590,7 @@ async function loadCategories(pcId, force=false){
   showLoading();
   try{
     if (!force && cache.categories[pcId]){ populateCategories(pcId); populateQuickCategories(pcId); hideLoading(); return; }
-    const url = new URL(`${API_BASE}/v2/autocatalog/${pathPrefix()}/Categories`);
+    const url = new URL(`${API_BASE}/${pathPrefix()}/Categories`, window.location.origin);
     url.searchParams.append('type', 'PC'); url.searchParams.append('ID', pcId);
     const data = await checkedFetch(url);
     function flattenTree(nodes, level = 0){ let result = []; nodes.forEach(node => { result.push({ CATEGORY_ID: node.CATEGORY_ID, DES: node.DES, level }); if (node.CHILD && node.CHILD.length) result = result.concat(flattenTree(node.CHILD, level + 1)); }); return result; }
@@ -633,7 +631,7 @@ async function loadProducts(pcId, categoryId, force = false) {
   showLoading();
   try {
     if (!force && cache.products[key]) { populateProducts(key); hideLoading(); return; }
-    const url = new URL(`${API_BASE}/v2/autocatalog/${pathPrefix()}/Products`);
+    const url = new URL(`${API_BASE}/${pathPrefix()}/Products`, window.location.origin);
     url.searchParams.append('type', 'PC'); url.searchParams.append('CATEGORY_ID', categoryId); url.searchParams.append('ID', pcId);
     const data = await checkedFetch(url);
     const arr = Array.isArray(data) ? data : (data.result || data || []);
@@ -657,7 +655,7 @@ async function loadArticles(pcId, productIdsCsv){
   showSkeletonCards();
   try{
     if (cache.articles[key]){ displayArticles(cache.articles[key]); hideLoading(); return; }
-    const url = new URL(`${API_BASE}/v2/autocatalog/${pathPrefix()}/Articles`);
+    const url = new URL(`${API_BASE}/${pathPrefix()}/Articles`, window.location.origin);
     url.searchParams.append('type','PC');
     url.searchParams.append('PT_IDS', productIdsCsv);
     url.searchParams.append('ID', pcId);

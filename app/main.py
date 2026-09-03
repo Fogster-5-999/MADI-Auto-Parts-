@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app import config
-from app.routers import chat, health
+from app.routers import chat, health, parts
 
 STATIC_DIR = Path(__file__).parent / "static"
 
@@ -23,6 +23,7 @@ app.add_middleware(
 
 app.include_router(health.router)
 app.include_router(chat.router)
+app.include_router(parts.router)
 
 
 @app.get("/")
