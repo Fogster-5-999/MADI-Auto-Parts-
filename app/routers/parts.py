@@ -24,7 +24,7 @@ ALLOWED_ENDPOINTS = {
 
 
 def _build_url(lang: str, region: str, endpoint: str, params: dict) -> str:
-    path = f"{region}-{lang}/{endpoint}"
+    path = f"{lang}-{region}/{endpoint}"
     url = f"{UMAPI_BASE}/{path}"
     if params:
         query = "&".join(f"{k}={v}" for k, v in params.items() if v is not None)

@@ -41,4 +41,6 @@ def add_message(session, role, content):
 
 
 def model_context(session):
-    return session["messages"][1:][-MODEL_CONTEXT_LIMIT:]
+    system = session["messages"][:1]
+    rest = session["messages"][1:][-MODEL_CONTEXT_LIMIT:]
+    return system + rest
