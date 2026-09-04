@@ -12,7 +12,6 @@ SYSTEM_PROMPT = """
 client = None
 if config.AI_ENABLED:
     client = openai.OpenAI(
-        api_key=config.API_KEY,
-        base_url="https://rest-assistant.api.cloud.yandex.net/v1",
-        project=config.FOLDER_ID,
+        api_key=config.OPENROUTER_API_KEY,
+        base_url="https://openrouter.ai/api/v1",
     )

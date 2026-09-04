@@ -33,15 +33,14 @@ async def chat(request: Request):
         session = get_session(session_id, ai.SYSTEM_PROMPT)
         add_message(session, "user", message)
 
-        response = ai.client.responses.create(
-            model=f"gpt://{config.FOLDER_ID}/{config.MODEL}",
+        response = ai.client.chat.completions.create(
+            model=config.MODEL,
             temperature=0.6,
-            max_output_tokens=2500,
-            instructions=ai.SYSTEM_PROMPT,
-            input=model_context(session),
+            max_tokens=2500,
+            messages=model_context(session),
         )
 
-        reply = response.output_text.strip()
+        reply = response.choices[0].message.content.strip()
         cleaned_reply = clean_ai_response(reply)
         add_message(session, "assistant", cleaned_reply)
 
