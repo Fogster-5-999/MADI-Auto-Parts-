@@ -1,86 +1,121 @@
+<h1 align="center">🚗 МАДИ Автозапчасти</h1>
+<p align="center">Веб-приложение для подбора автозапчастей с AI-экспертом</p>
 
-**Деплой:** https://madi-parts.onrender.com/  
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/FastAPI-0.104-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/Yandex_Cloud_AI-Qwen3--235B-FC3F24?style=for-the-badge" alt="Yandex AI">
+  <img src="https://img.shields.io/badge/Deploy-Render-4D68FF?style=for-the-badge&logo=render&logoColor=white" alt="Render">
+</p>
 
-**Авторы:** Бронин Алексей, Антонян Николай, Денис Карпенко  
-**Группа:** 2бИТСн3  
+<p align="center">
+  <a href="https://madi-auto-parts.onrender.com/">🔗 Демо</a>
+</p>
 
 ---
+
 
 ## О проекте
 
-**МАДИ Автозапчасти** — современное веб-приложение для подбора автомобильных запчастей с интегрированным AI-экспертом. Сочетает огромный каталог деталей и умного чат-бота, который даёт профессиональные консультации по ремонту, диагностике и удешевлению обслуживания автомобилей.
+Веб-приложение для подбора автомобильных запчастей с интегрированным AI-экспертом. Пользователь выбирает марку → модель → категорию → деталь, а AI-бот консультирует по ремонту и удешевлению.
 
-### Ключевые возможности
-- Умный каталог запчастей — подбор по марке, модели и модификации авто  
-- AI-эксперт — чат-бот на базе **Yandex Cloud AI (Qwen3-235B)**  
-- Корзина покупок с удобным управлением  
-- Адаптивный дизайн — glassmorphism, тёмная/светлая тема  
-- Быстрые категории и умные подсказки для мгновенного поиска  
+### Возможности
 
-Проект решает задачи: упрощение подбора запчастей, снижение стоимости ремонта, продление срока службы автомобиля, анализ любых автомобильных данных.
+- 🔍 **Каталог запчастей** — каскадный подбор по марке, модели и модификации
+- 🤖 **AI-эксперт** — чат-бот на базе Yandex Cloud AI (Qwen3-235B)
+- 🛒 **Корзина** — сборка списка запчастей (клиент-сторон)
+- 🌗 **Темы** — тёмный / светлый режим
+- 📱 **Адаптивный дизайн** — glassmorphism, работает на мобильных
 
 ---
 
-## Структура проекта
+## Стек
 
- - madi-autoparts/
- - app/                   # Бэкенд (FastAPI-приложение)
-   - main.py              # Точка входа: FastAPI app, CORS, подключение роутеров
-   - config.py            # Переменные окружения и настройки
-   - sessions.py          # Хранилище диалогов (in-memory, с лимитами)
-   - text.py              # Очистка ответов AI от Markdown
-   - services/            # Внешние интеграции (Yandex Cloud AI)
-   - routers/             # Эндпоинты: /health, /chat
-   - static/              # Фронтенд (HTML + CSS + JS)
- - requirements.txt       # Зависимости Python
- - render.yaml            # Конфигурация деплоя на Render
-
-
-## Технологический стек
-
-### Бэкенд
-- **FastAPI** 0.104.1 — асинхронный веб-фреймворк  
-- **Uvicorn** — ASGI-сервер  
-- **OpenAI Client** — работа с Yandex Cloud AI  
-- **python-multipart** — обработка форм  
-
-### Фронтенд
-- Vanilla JavaScript (без фреймворков)  
-- CSS 3 + кастомные свойства (glassmorphism, темы)  
-- **UMAPI.ru** — внешний API каталога автозапчастей  
-
-### AI-интеграция
-- **Yandex Cloud AI** — модель `qwen3-235b-a22b-fp8/latest`  
-- Сессионные диалоги с сохранением контекста  
-- Очистка ответов от Markdown, советы по DIY и удешевлению ремонта  
+| Слой | Технологии |
+|---|---|
+| Backend | FastAPI, Uvicorn, httpx |
+| Frontend | Vanilla HTML/CSS/JS (один файл) |
+| AI | Yandex Cloud AI (Qwen3-235B) через OpenAI SDK |
+| Каталог | UMAPI.ru API (проксируется через бэкенд) |
+| Деплой | Render.com (free tier) |
+| БД | Нет — сессии in-memory |
 
 ---
 
 ## Быстрый старт
 
-### Требования
-- Python 3.8+  
-- Аккаунт Yandex Cloud с доступом к AI API  
-- API-ключ от UMAPI.ru  
-
-### Установка и запуск
-
 ```bash
-# 1. Клонировать репозиторий
-git clone <ваш-репозиторий>
+# Клонировать
+git clone https://github.com/Fogster-5-999/MADI-Auto-Parts-.git
+cd MADI-Auto-Parts-
 
-# 2. Установить зависимости
+# Установить зависимости
 pip install -r requirements.txt
 
-# 3. Задать переменные окружения в сервисе, который вы используете для развёртки.
-export FOLDER_ID="your_yandex_folder_id"
-export API_KEY="your_yandex_cloud_api_key"
-export MODEL="qwen3-235b-a22b-fp8/latest"   # опционально
-export PORT=8000                            # опционально
+# Задать переменные окружения
+export FOLDER_ID="ваш_yandex_folder_id"
+export API_KEY="ваш_yandex_cloud_api_key"
+export UMAPI_KEY="ваш_umapi_key"
 
-# 4. Запустить приложение
+# Запустить
 uvicorn app.main:app --host 0.0.0.0 --port 8000
-# или
-python -m app.main
-После запуска приложение доступно по адресу:
-http://localhost:8000 (или выбранный вами при деплое адрес)
+```
+
+Откройте http://localhost:8000
+
+---
+
+## Структура
+
+```
+MADI-Auto-Parts-/
+├── app/
+│   ├── main.py              # Точка входа, CORS, роутеры
+│   ├── config.py            # Переменные окружения
+│   ├── sessions.py          # Хранилище диалогов (in-memory)
+│   ├── text.py              # Очистка Markdown из ответов AI
+│   ├── services/
+│   │   └── ai.py            # Yandex Cloud AI клиент + промпт
+│   ├── routers/
+│   │   ├── health.py        # GET /health
+│   │   ├── chat.py          # POST /chat
+│   │   └── parts.py         # GET /api/parts/{lang}/{region}/{endpoint}
+│   └── static/
+│       └── MADIPARTS.html   # Весь фронтенд в одном файле
+├── requirements.txt
+└── render.yaml
+```
+
+---
+
+## API
+
+| Метод | Путь | Описание |
+|---|---|---|
+| `GET` | `/` | `MADIPARTS.html` |
+| `GET` | `/health` | Статус AI и модель |
+| `POST` | `/chat` | Отправить сообщение AI-эксперту |
+| `GET` | `/api/parts/{lang}/{region}/{endpoint}` | Прокси к каталогу UMAPI.ru |
+
+### POST /chat
+
+```json
+// Request
+{ "message": "Какие тормозные колодки лучше для Toyota Camry?", "session_id": "optional" }
+
+// Response
+{ "reply": "Для Toyota Camry рекомендую...", "session_id": "madi_user_1234" }
+```
+
+---
+
+## Переменные окружения
+
+| Переменная | Описание | Обязательна |
+|---|---|---|
+| `FOLDER_ID` | ID папки Yandex Cloud | Да |
+| `API_KEY` | API-ключ Yandex Cloud | Да |
+| `UMAPI_KEY` | API-ключ UMAPI.ru | Да |
+| `MODEL` | Модель AI (по умолчанию `qwen3-235b-a22b-fp8/latest`) | Нет |
+
+---
